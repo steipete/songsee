@@ -43,8 +43,9 @@ description: songsee spectral pipeline, defaults, and rendering details.
   <div class="card">
     <p>
       Each output pixel maps to a time frame and frequency bin. Values are normalized by the global
-      min/max in the computed spectrogram unless clamp values are provided. Frequency range can be
-      restricted via min/max frequency in Hz.
+      min/max in the computed spectrogram unless clamp values are provided. Feature panels use
+      percentile-based clamping to preserve contrast across different visualizations. Frequency
+      range can be restricted via min/max frequency in Hz.
     </p>
     <p>
       Output size defaults to 1920x1080. JPEG quality is 95. PNG output is available via --format.

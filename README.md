@@ -1,18 +1,22 @@
 # 🌊 songsee — FFT so pretty, your ears will be jealous.
 
-
 ![9-mode visualization example](example.png)
 
 ## Features
 
 - **9 visualization modes**: spectrogram, mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux
-- **6 color palettes**: classic, magma, inferno, viridis, gray, clawd
-- **Combine modes**: Stack multiple visualizations in one image
+- **5 color palettes**: classic, magma, inferno, viridis, gray
+- **Auto-contrast**: per-panel percentile normalization for readable heatmaps
+- **Combine modes**: stack multiple visualizations in one grid image
 - **Universal input**: WAV, MP3, or anything ffmpeg can handle
-- **Fast**: Native Go, no Python dependencies
+- **Fast**: native Go, no Python dependencies
 - **Flexible output**: PNG or JPEG, customizable dimensions
 
 ## Install
+
+```bash
+brew install steipete/tap/songsee
+```
 
 ```bash
 go install github.com/steipete/songsee/cmd/songsee@latest
@@ -50,20 +54,23 @@ songsee track.mp3 --viz hpss,chroma --style inferno -o viz.png --width 2560 --he
 
 ## Palettes
 
-`classic` · `magma` · `inferno` · `viridis` · `gray` · `clawd`
+`classic` · `magma` · `inferno` · `viridis` · `gray`
 
 ## Options
 
 ```
+--output        Output path (default: input name + extension)
+--format        jpg or png (default: jpg)
 --width         Output width (default: 1920)
 --height        Output height (default: 1080)
 --window        FFT window size (default: 2048)
 --hop           Hop size (default: 512)
---start         Start time in seconds
---duration      Duration in seconds
 --min-freq      Minimum frequency in Hz
 --max-freq      Maximum frequency in Hz
---format        jpg or png (default: jpg)
+--start         Start time in seconds
+--duration      Duration in seconds
+--style         Palette name
+--viz           Visualization list (repeatable or comma-separated)
 ```
 
 ---

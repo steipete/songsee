@@ -53,6 +53,10 @@ body_class: home
       <p>mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux — rendered as single or grid views.</p>
     </div>
     <div class="card">
+      <h3>Auto-contrast</h3>
+      <p>Percentile clamping keeps every panel readable without manual tuning.</p>
+    </div>
+    <div class="card">
       <h3>Clean output</h3>
       <p>JPEG or PNG output, default quality 95, and stable results for batch workflows.</p>
     </div>
@@ -63,6 +67,7 @@ body_class: home
   <div class="kicker">Install</div>
   <h2 class="section-title">One command. Instant spectrograms.</h2>
   <div class="code-block">
+    brew install steipete/tap/songsee
     go install github.com/steipete/songsee/cmd/songsee@latest
   </div>
   <div class="domain-note">
