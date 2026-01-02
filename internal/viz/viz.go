@@ -25,6 +25,7 @@ const (
 	Loudness    Kind = "loudness"
 	Tempogram   Kind = "tempogram"
 	MFCC        Kind = "mfcc"
+	Flux        Kind = "flux"
 )
 
 var validKinds = map[Kind]struct{}{
@@ -36,6 +37,7 @@ var validKinds = map[Kind]struct{}{
 	Loudness:    {},
 	Tempogram:   {},
 	MFCC:        {},
+	Flux:        {},
 }
 
 // ParseList normalizes a list of viz names, allowing comma-separated values.
@@ -173,6 +175,9 @@ func Render(kind Kind, ctx *Context, opts RenderOptions) (*image.RGBA, error) {
 			Palette:  opts.Palette,
 			FlipVert: true,
 		})
+	case Flux:
+		flux := dsp.SpectralFlux(&ctx.Spec)
+		return render.Loudness(flux, opts.Width, opts.Height, opts.Palette)
 	default:
 		return nil, fmt.Errorf("unknown viz: %s", kind)
 	}

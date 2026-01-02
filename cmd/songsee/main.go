@@ -36,7 +36,7 @@ type cli struct {
 	Duration   float64          `name:"duration" help:"duration in seconds (0 = full)"`
 	SampleRate int              `name:"sample-rate" help:"ffmpeg output sample rate" default:"44100"`
 	Style      string           `help:"palette style: classic, magma, inferno, viridis, gray" default:"classic"`
-	Viz        []string         `name:"viz" help:"visualizations (repeatable or comma-separated): spectrogram, mel, chroma, hpss, selfsim, loudness, tempogram, mfcc"`
+	Viz        []string         `name:"viz" help:"visualizations (repeatable or comma-separated): spectrogram, mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux"`
 	FFmpegPath string           `name:"ffmpeg" help:"path to ffmpeg binary"`
 	Quiet      bool             `short:"q" help:"suppress stdout output"`
 	Verbose    bool             `short:"v" help:"verbose stderr output"`

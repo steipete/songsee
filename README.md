@@ -5,7 +5,7 @@ Generate modern spectrogram images from audio files.
 ## Features
 
 - Classic time–frequency spectrograms (FFT/STFT, Hann window)
-- Multi-panel feature visualizations (mel, chroma, hpss, selfsim, loudness, tempogram, mfcc)
+- Multi-panel feature visualizations (mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux)
 - Native decoding for WAV + MP3, ffmpeg fallback for everything else
 - PNG or JPEG output (default JPG)
 - Time slicing via `--start` + `--duration`

@@ -50,7 +50,7 @@ body_class: home
     </div>
     <div class="card">
       <h3>Feature panels</h3>
-      <p>mel, chroma, hpss, selfsim, loudness, tempogram, mfcc — rendered as single or grid views.</p>
+      <p>mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux — rendered as single or grid views.</p>
     </div>
     <div class="card">
       <h3>Clean output</h3>

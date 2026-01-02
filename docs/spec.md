@@ -67,8 +67,8 @@ description: songsee spectral pipeline, defaults, and rendering details.
   <div class="card">
     <p>
       Visualizations are selectable via --viz. Defaults to spectrogram. Supported names: spectrogram,
-      mel, chroma, hpss, selfsim, loudness, tempogram, mfcc. Multiple entries render as a grid of
-      panels.
+      mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux. Multiple entries render as a grid
+      of panels.
     </p>
   </div>
 </section>

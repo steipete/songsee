@@ -33,7 +33,7 @@ func TestRenderAllKinds(t *testing.T) {
 		Height:  80,
 		Palette: colorRGBA,
 	}
-	kinds := []Kind{Spectrogram, Mel, Chroma, MFCC, HPSS, SelfSim, Loudness, Tempogram}
+	kinds := []Kind{Spectrogram, Mel, Chroma, MFCC, HPSS, SelfSim, Loudness, Tempogram, Flux}
 	for _, kind := range kinds {
 		img, err := Render(kind, ctx, opts)
 		if err != nil {
