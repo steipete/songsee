@@ -3,30 +3,31 @@ package audio
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestResolveFFmpeg(t *testing.T) {
+	ffmpegPath := installFakeFFmpeg(t)
+	t.Setenv("PATH", filepath.Dir(ffmpegPath)+string(os.PathListSeparator)+os.Getenv("PATH"))
+
 	path, err := resolveFFmpeg("")
 	if err != nil {
 		t.Fatalf("resolveFFmpeg: %v", err)
 	}
-	if path == "" {
-		t.Fatalf("empty ffmpeg path")
+	if path != ffmpegPath {
+		t.Fatalf("expected %s, got %s", ffmpegPath, path)
 	}
 }
 
 func TestResolveFFmpegExplicit(t *testing.T) {
-	found, err := resolveFFmpeg("")
-	if err != nil {
-		t.Fatalf("resolveFFmpeg: %v", err)
-	}
-	path, err := resolveFFmpeg(found)
+	ffmpegPath := installFakeFFmpeg(t)
+	path, err := resolveFFmpeg(ffmpegPath)
 	if err != nil {
 		t.Fatalf("resolveFFmpeg explicit: %v", err)
 	}
-	if path == "" {
-		t.Fatalf("empty ffmpeg path")
+	if path != ffmpegPath {
+		t.Fatalf("expected %s, got %s", ffmpegPath, path)
 	}
 }
 
@@ -38,8 +39,12 @@ func TestResolveFFmpegMissing(t *testing.T) {
 }
 
 func TestDecodeWithFFmpegFile(t *testing.T) {
-	path := testdataPath(t, "sine.mp3")
-	pcm, err := DecodeWithFFmpeg(path, nil, 22050, "")
+	ffmpegPath := installFakeFFmpeg(t)
+	input := filepath.Join(t.TempDir(), "input.bin")
+	if err := os.WriteFile(input, []byte("audio"), 0o644); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	pcm, err := DecodeWithFFmpeg(input, nil, 22050, ffmpegPath)
 	if err != nil {
 		t.Fatalf("DecodeWithFFmpeg: %v", err)
 	}
@@ -52,12 +57,8 @@ func TestDecodeWithFFmpegFile(t *testing.T) {
 }
 
 func TestDecodeWithFFmpegStdin(t *testing.T) {
-	path := testdataPath(t, "sine.mp3")
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("ReadFile: %v", err)
-	}
-	pcm, err := DecodeWithFFmpeg("", bytes.NewReader(data), 44100, "")
+	ffmpegPath := installFakeFFmpeg(t)
+	pcm, err := DecodeWithFFmpeg("", bytes.NewReader([]byte("audio")), 44100, ffmpegPath)
 	if err != nil {
 		t.Fatalf("DecodeWithFFmpeg stdin: %v", err)
 	}
@@ -71,4 +72,15 @@ func TestDecodeWithFFmpegBadPath(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
+}
+
+func installFakeFFmpeg(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "ffmpeg")
+	script := "#!/bin/sh\nprintf '\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x3f'\n"
+	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return path
 }
