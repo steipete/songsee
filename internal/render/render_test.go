@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"testing"
 
@@ -153,5 +154,149 @@ func TestRenderSpectrogramRangeReset(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("RenderSpectrogram: %v", err)
+	}
+}
+
+func TestHeatmap(t *testing.T) {
+	m := dsp.NewFeatureMap(2, 2)
+	m.Set(0, 0, -10)
+	m.Set(1, 0, 0)
+	m.Set(0, 1, -5)
+	m.Set(1, 1, -1)
+	img, err := Heatmap(&m, HeatmapOptions{
+		Width:   4,
+		Height:  4,
+		Palette: func(t float64) color.RGBA { return color.RGBA{R: uint8(255 * t), A: 255} },
+	})
+	if err != nil {
+		t.Fatalf("Heatmap: %v", err)
+	}
+	if img.Bounds().Dx() != 4 || img.Bounds().Dy() != 4 {
+		t.Fatalf("unexpected bounds")
+	}
+	if img.RGBAAt(0, 0) == img.RGBAAt(3, 3) {
+		t.Fatalf("expected varying pixels")
+	}
+}
+
+func TestHeatmapErrors(t *testing.T) {
+	if _, err := Heatmap(nil, HeatmapOptions{Width: 1, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
+		t.Fatalf("expected map error")
+	}
+	empty := dsp.FeatureMap{}
+	if _, err := Heatmap(&empty, HeatmapOptions{Width: 1, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
+		t.Fatalf("expected feature map error")
+	}
+	m := dsp.NewFeatureMap(1, 1)
+	m.Set(0, 0, 1)
+	if _, err := Heatmap(&m, HeatmapOptions{Width: 0, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
+		t.Fatalf("expected size error")
+	}
+	if _, err := Heatmap(&m, HeatmapOptions{Width: 1, Height: 1}); err == nil {
+		t.Fatalf("expected palette error")
+	}
+}
+
+func TestCompose(t *testing.T) {
+	imgA := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	imgA.SetRGBA(0, 0, color.RGBA{R: 255, A: 255})
+	imgB := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	imgB.SetRGBA(1, 1, color.RGBA{G: 255, A: 255})
+	out, err := Compose(4, 2, []Panel{
+		{Image: imgA, X: 0, Y: 0},
+		{Image: nil, X: 0, Y: 0},
+		{Image: imgB, X: 2, Y: 0},
+	}, color.RGBA{})
+	if err != nil {
+		t.Fatalf("Compose: %v", err)
+	}
+	if out.RGBAAt(0, 0).R == 0 {
+		t.Fatalf("expected panel A pixel")
+	}
+	if out.RGBAAt(3, 1).G == 0 {
+		t.Fatalf("expected panel B pixel")
+	}
+}
+
+func TestLoudness(t *testing.T) {
+	img, err := Loudness([]float64{0, 1, 2, 1, 0}, 5, 4, func(t float64) color.RGBA { return color.RGBA{B: uint8(255 * t), A: 255} })
+	if err != nil {
+		t.Fatalf("Loudness: %v", err)
+	}
+	if img.Bounds().Dx() != 5 || img.Bounds().Dy() != 4 {
+		t.Fatalf("unexpected bounds")
+	}
+	if img.RGBAAt(2, 0).B == 0 {
+		t.Fatalf("expected loudness pixel")
+	}
+}
+
+func TestLoudnessEmpty(t *testing.T) {
+	img, err := Loudness(nil, 3, 2, func(t float64) color.RGBA { return color.RGBA{A: 255} })
+	if err != nil {
+		t.Fatalf("Loudness empty: %v", err)
+	}
+	if img.Bounds().Dx() != 3 || img.Bounds().Dy() != 2 {
+		t.Fatalf("unexpected bounds")
+	}
+}
+
+func TestLoudnessErrors(t *testing.T) {
+	if _, err := Loudness([]float64{1}, 0, 1, func(t float64) color.RGBA { return color.RGBA{} }); err == nil {
+		t.Fatalf("expected size error")
+	}
+	if _, err := Loudness([]float64{1}, 1, 1, nil); err == nil {
+		t.Fatalf("expected palette error")
+	}
+}
+
+func TestLoudnessZero(t *testing.T) {
+	img, err := Loudness([]float64{0, 0, 0}, 3, 2, func(t float64) color.RGBA { return color.RGBA{A: 255} })
+	if err != nil {
+		t.Fatalf("Loudness zero: %v", err)
+	}
+	if img.Bounds().Dx() != 3 || img.Bounds().Dy() != 2 {
+		t.Fatalf("unexpected bounds")
+	}
+}
+
+func TestHeatmapClamp(t *testing.T) {
+	m := dsp.NewFeatureMap(2, 1)
+	m.Set(0, 0, -10)
+	m.Set(1, 0, 0)
+	_, err := Heatmap(&m, HeatmapOptions{
+		Width:   2,
+		Height:  1,
+		Palette: func(t float64) color.RGBA { return color.RGBA{A: 255} },
+		Clamp:   true,
+		Min:     -5,
+		Max:     -5,
+	})
+	if err != nil {
+		t.Fatalf("Heatmap clamp: %v", err)
+	}
+}
+
+func TestComposeError(t *testing.T) {
+	if _, err := Compose(0, 1, nil, color.RGBA{}); err == nil {
+		t.Fatalf("expected error")
+	}
+}
+
+func TestHeatmapFlipVert(t *testing.T) {
+	m := dsp.NewFeatureMap(1, 2)
+	m.Set(0, 0, 0)
+	m.Set(0, 1, 1)
+	img, err := Heatmap(&m, HeatmapOptions{
+		Width:    1,
+		Height:   2,
+		Palette:  func(t float64) color.RGBA { return color.RGBA{R: uint8(255 * t), A: 255} },
+		FlipVert: true,
+	})
+	if err != nil {
+		t.Fatalf("Heatmap flip: %v", err)
+	}
+	if img.RGBAAt(0, 0).R == 0 {
+		t.Fatalf("expected flipped pixel")
 	}
 }

@@ -45,6 +45,9 @@ func TestComputeSpectrogramDefaults(t *testing.T) {
 	if spec.WindowSize != 2048 {
 		t.Fatalf("window default = %d", spec.WindowSize)
 	}
+	if spec.HopSize != 512 {
+		t.Fatalf("hop default = %d", spec.HopSize)
+	}
 	if spec.Frames != 1 {
 		t.Fatalf("frames = %d", spec.Frames)
 	}

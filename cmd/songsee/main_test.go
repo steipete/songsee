@@ -157,6 +157,15 @@ func TestRunUnknownStyle(t *testing.T) {
 	}
 }
 
+func TestRunUnknownViz(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"--viz", "nope", "-"}, bytes.NewReader(makeWAV([]int16{0, 1}, 44100, 1)), stdout, stderr)
+	if exit != 2 {
+		t.Fatalf("expected usage exit, got %d", exit)
+	}
+}
+
 func TestRunBadSize(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -260,6 +269,163 @@ func TestRunStyleAffectsOutput(t *testing.T) {
 	outMagma := runToBytes(t, wav, "magma")
 	if bytes.Equal(outClassic, outMagma) {
 		t.Fatalf("expected different output for different styles")
+	}
+}
+
+func TestRunMultiVizLayout(t *testing.T) {
+	wav := makeWAV(genSineMixSamples(44100), 44100, 1)
+	outDir := t.TempDir()
+	outPath := filepath.Join(outDir, "multi.jpg")
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{
+		"--viz", "spectrogram",
+		"--viz", "chroma",
+		"--width", "400",
+		"--height", "200",
+		"--output", outPath,
+		"-",
+	}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	file, err := os.Open(outPath)
+	if err != nil {
+		t.Fatalf("open output: %v", err)
+	}
+	defer func() { _ = file.Close() }()
+	img, _, err := image.Decode(file)
+	if err != nil {
+		t.Fatalf("decode image: %v", err)
+	}
+	if img.Bounds().Dx() != 400 || img.Bounds().Dy() != 200 {
+		t.Fatalf("size mismatch")
+	}
+	if flatImage(img) {
+		t.Fatalf("image appears flat")
+	}
+}
+
+func TestRunVizCommaSeparated(t *testing.T) {
+	wav := makeWAV(genSineMixSamples(44100), 44100, 1)
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{
+		"--viz", "spectrogram,mel",
+		"--format", "png",
+		"--output", "-",
+		"-",
+	}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if stdout.Len() == 0 {
+		t.Fatalf("expected output")
+	}
+	if _, err := png.Decode(bytes.NewReader(stdout.Bytes())); err != nil {
+		t.Fatalf("decode png: %v", err)
+	}
+}
+
+func TestGridLayout(t *testing.T) {
+	grid, err := gridLayout(3, 300, 200, 10)
+	if err != nil {
+		t.Fatalf("gridLayout: %v", err)
+	}
+	if grid.CellWidth <= 0 || grid.CellHeight <= 0 {
+		t.Fatalf("invalid cell size")
+	}
+	if grid.Cols*grid.Rows < 3 {
+		t.Fatalf("grid too small")
+	}
+}
+
+func TestGridLayoutTooSmall(t *testing.T) {
+	if _, err := gridLayout(4, 9, 9, 8); err == nil {
+		t.Fatalf("expected error")
+	}
+}
+
+func TestGridLayoutDefaults(t *testing.T) {
+	grid, err := gridLayout(0, 100, 50, 5)
+	if err != nil {
+		t.Fatalf("gridLayout default: %v", err)
+	}
+	if grid.Cols < 1 || grid.Rows < 1 {
+		t.Fatalf("invalid grid defaults")
+	}
+}
+
+func TestGridLayoutInvalidSize(t *testing.T) {
+	if _, err := gridLayout(1, 0, 10, 0); err == nil {
+		t.Fatalf("expected error")
+	}
+}
+
+func TestRunFormatJPEGStdout(t *testing.T) {
+	wav := makeWAV([]int16{0, 1000, -1000, 0}, 44100, 1)
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"--format", "jpeg", "--output", "-", "-"}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if _, _, err := image.Decode(bytes.NewReader(stdout.Bytes())); err != nil {
+		t.Fatalf("decode jpeg: %v", err)
+	}
+}
+
+func TestRunOutputDefaultFromStdin(t *testing.T) {
+	tmp := t.TempDir()
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd: %v", err)
+	}
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatalf("Chdir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(cwd) })
+
+	wav := makeWAV([]int16{0, 1, -1, 0}, 44100, 1)
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"-"}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if _, err := os.Stat(filepath.Join(tmp, "songsee.jpg")); err != nil {
+		t.Fatalf("expected default output: %v", err)
+	}
+}
+
+func TestRunOutputAppendExtension(t *testing.T) {
+	wav := makeWAV([]int16{0, 1, -1, 0}, 44100, 1)
+	outDir := t.TempDir()
+	outPath := filepath.Join(outDir, "spectro")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"--output", outPath, "-"}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if _, err := os.Stat(outPath + ".jpg"); err != nil {
+		t.Fatalf("expected appended output: %v", err)
+	}
+}
+
+func TestRunOutputNoExtWithFormatFlag(t *testing.T) {
+	wav := makeWAV([]int16{0, 1, -1, 0}, 44100, 1)
+	outDir := t.TempDir()
+	outPath := filepath.Join(outDir, "spectro")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"--format", "png", "--output", outPath, "-"}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if _, err := os.Stat(outPath); err != nil {
+		t.Fatalf("expected output without extension: %v", err)
 	}
 }
 
@@ -437,6 +603,16 @@ func TestDie(t *testing.T) {
 	}
 }
 
+func TestDieUsageNoContext(t *testing.T) {
+	stderr := &bytes.Buffer{}
+	if code := dieUsage(stderr, nil, "nope"); code != 2 {
+		t.Fatalf("expected code 2")
+	}
+	if stderr.String() == "" {
+		t.Fatalf("expected stderr output")
+	}
+}
+
 type errSentinel struct{}
 
 func (errSentinel) Error() string { return "boom" }
@@ -489,6 +665,25 @@ func TestWriteImageUnknownFormat(t *testing.T) {
 	}
 }
 
+func TestWriteImagePNGAndJPG(t *testing.T) {
+	dir := t.TempDir()
+	pngPath := filepath.Join(dir, "out.png")
+	jpgPath := filepath.Join(dir, "out.jpg")
+	img := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	if err := writeImage(pngPath, "png", img, &bytes.Buffer{}); err != nil {
+		t.Fatalf("write png: %v", err)
+	}
+	if err := writeImage(jpgPath, "jpg", img, &bytes.Buffer{}); err != nil {
+		t.Fatalf("write jpg: %v", err)
+	}
+	if _, err := os.Stat(pngPath); err != nil {
+		t.Fatalf("missing png: %v", err)
+	}
+	if _, err := os.Stat(jpgPath); err != nil {
+		t.Fatalf("missing jpg: %v", err)
+	}
+}
+
 func TestRunVerbose(t *testing.T) {
 	dir := t.TempDir()
 	input := filepath.Join(dir, "input.wav")
@@ -504,6 +699,28 @@ func TestRunVerbose(t *testing.T) {
 	}
 	if !bytes.Contains(stderr.Bytes(), []byte("decoded:")) {
 		t.Fatalf("expected verbose output")
+	}
+}
+
+func TestIsPowerOfTwo(t *testing.T) {
+	if !isPowerOfTwo(8) {
+		t.Fatalf("expected power of two")
+	}
+	if isPowerOfTwo(0) {
+		t.Fatalf("unexpected power of two")
+	}
+}
+
+func TestHasFlag(t *testing.T) {
+	args := []string{"--format", "png", "--style=magma"}
+	if !hasFlag(args, "--format") {
+		t.Fatalf("expected format flag")
+	}
+	if !hasFlag(args, "--style") {
+		t.Fatalf("expected style flag")
+	}
+	if hasFlag(args, "--nope") {
+		t.Fatalf("unexpected flag")
 	}
 }
 
