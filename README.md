@@ -1,15 +1,19 @@
-# songsee
+# songsee 🎵👁️
 
-Generate modern spectrogram images from audio files.
+**See your sound.** Generate gorgeous spectrogram visualizations from any audio file.
+
+![9-mode visualization example](example.png)
+
+*9 visualization modes in one image. Yes, we went there.* 🦞
 
 ## Features
 
-- Classic time–frequency spectrograms (FFT/STFT, Hann window)
-- Multi-panel feature visualizations (mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux)
-- Native decoding for WAV + MP3, ffmpeg fallback for everything else
-- PNG or JPEG output (default JPG)
-- Time slicing via `--start` + `--duration`
-- Palette styles: classic, magma, inferno, viridis, gray
+- 🎨 **9 visualization modes**: spectrogram, mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux
+- 🌈 **6 color palettes**: classic, magma, inferno, viridis, gray, and *clawd* (the lobster special 🦞)
+- 📊 **Combine modes**: Stack multiple visualizations in one image
+- 🎵 **Universal input**: WAV, MP3, or anything ffmpeg can handle
+- ⚡ **Fast**: Native Go, no Python dependencies
+- 🖼️ **Flexible output**: PNG or JPEG, customizable dimensions
 
 ## Install
 
@@ -17,63 +21,74 @@ Generate modern spectrogram images from audio files.
 go install github.com/steipete/songsee/cmd/songsee@latest
 ```
 
-## Quick start
+Or clone and build:
+```bash
+git clone https://github.com/steipete/songsee.git
+cd songsee
+go build -o songsee ./cmd/songsee/
+```
+
+## Quick Start
 
 ```bash
+# Basic spectrogram
 songsee track.mp3
-songsee track.wav --style magma --width 2048 --height 1024 -o spectro.png
-cat track.mp3 | songsee - --style gray --format png
-songsee track.mp3 --start 12.5 --duration 8 --output slice.jpg
-songsee track.mp3 --viz spectrogram,mel,chroma --width 2048 --height 1024
+
+# Mel spectrogram with magma palette
+songsee track.mp3 --viz mel --style magma
+
+# THE MULTIPASS: all 9 modes combined 🎫
+songsee track.mp3 --viz spectrogram,mel,chroma,hpss,selfsim,loudness,tempogram,mfcc,flux --style clawd
+
+# Custom output
+songsee track.mp3 --viz hpss,chroma --style inferno -o my_viz.png --width 2560 --height 1440
 ```
 
-## Usage
+## Visualization Modes
 
-```text
-songsee [flags] <input>
+| Mode | What it shows |
+|------|---------------|
+| `spectrogram` | Classic time × frequency magnitude |
+| `mel` | Perceptual frequency scale (how humans hear) |
+| `chroma` | 12-bin pitch class (for harmony/key analysis) |
+| `hpss` | Harmonic vs percussive separation |
+| `selfsim` | Self-similarity matrix (song structure) |
+| `loudness` | Volume/energy over time |
+| `tempogram` | Tempo variation over time |
+| `mfcc` | Timbre fingerprint |
+| `flux` | Spectral change (where the action is ⚡) |
+
+## Palettes
+
+- `classic` - Traditional spectrogram colors
+- `magma` - Hot gradient 🔥
+- `inferno` - Even hotter 🌋
+- `viridis` - Scientific green-yellow
+- `gray` - Noir mode 🎬
+- `clawd` - Ocean depths to lobster red 🦞
+
+## Advanced Options
+
+```
+--width         Output width in pixels (default: 1920)
+--height        Output height in pixels (default: 1080)
+--window        FFT window size (default: 2048)
+--hop           Hop size in samples (default: 512)
+--start         Start time in seconds
+--duration      Duration in seconds
+--min-freq      Minimum frequency in Hz
+--max-freq      Maximum frequency in Hz
+--format        Output format: jpg or png (default: jpg)
 ```
 
-Input can be a file path or `-` for stdin.
+## Why "songsee"?
 
-### Flags
+Because `spectrogram-generator-cli-tool-v2-final-FINAL` was taken.
 
-- `-o, --output` output image path (default: input name + extension)
-- `--format` `jpg` or `png` (default: `jpg`)
-- `--width`, `--height` output size (default: 1920x1080)
-- `--window` FFT window size, power of two (default: 2048)
-- `--hop` hop size in samples (default: 512)
-- `--min-freq`, `--max-freq` frequency range in Hz
-- `--start`, `--duration` time slice in seconds
-- `--style` palette name
-- `--viz` visualizations (repeatable or comma-separated)
-- `--sample-rate` ffmpeg output sample rate
-- `--ffmpeg` explicit ffmpeg path
-- `-q, --quiet` suppress stdout output
-- `-v, --verbose` verbose stderr output
-- `--version` print version
+Also: **see** your **song**. Get it? 👀🎵
 
-## Output notes
+---
 
-- Default output is `input.jpg` or `input.png` based on `--format`.
-- When `--output` has no extension, the chosen format is appended.
-- JPEG quality is set to 95.
-- Multiple `--viz` entries render a grid that fits into the requested width/height.
+Built at inference speed by [@steipete](https://twitter.com/steipete) with help from [Clawd](https://clawd.ai) 🦞
 
-## Decoding
-
-- WAV/MP3 decode is native.
-- For other formats, install `ffmpeg` and songsee will auto-fallback.
-
-## Development
-
-```bash
-go test ./... -cover
-
-golangci-lint run
-```
-
-Lint config: `.golangci.yml`.
-
-## License
-
-MIT. See `LICENSE`.
+*"EXFOLIATE your audio!"*
