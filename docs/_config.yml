@@ -1,0 +1,11 @@
+title: songsee
+description: Generate modern spectrogram images from audio files.
+url: "https://songsee.sh"
+baseurl: ""
+markdown: kramdown
+permalink: pretty
+
+kramdown:
+  input: GFM
+
+collections: {}
