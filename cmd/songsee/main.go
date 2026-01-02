@@ -33,7 +33,7 @@ type cli struct {
 	StartSec   float64          `name:"start" help:"start time in seconds"`
 	Duration   float64          `name:"duration" help:"duration in seconds (0 = full)"`
 	SampleRate int              `name:"sample-rate" help:"ffmpeg output sample rate" default:"44100"`
-	Style      string           `help:"palette style: classic, magma, inferno, viridis, gray" default:"classic"`
+	Style      string           `help:"palette style: classic, magma, inferno, viridis, gray, clawd" default:"classic"`
 	FFmpegPath string           `name:"ffmpeg" help:"path to ffmpeg binary"`
 	Quiet      bool             `short:"q" help:"suppress stdout output"`
 	Verbose    bool             `short:"v" help:"verbose stderr output"`
