@@ -1,6 +1,5 @@
-# songsee
+# 🌊 songsee — FFT so pretty.
 
-🌊 **FFT so pretty.** See your sound—spectrograms, mel, chroma, and more from any audio file.
 
 ![9-mode visualization example](example.png)
 
