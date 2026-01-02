@@ -97,6 +97,7 @@ body_class: home
     <div class="palette inferno" title="inferno"></div>
     <div class="palette viridis" title="viridis"></div>
     <div class="palette gray" title="gray"></div>
+    <div class="palette clawd" title="clawd">🦞</div>
   </div>
 </section>
 

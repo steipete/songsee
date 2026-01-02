@@ -57,7 +57,7 @@ description: songsee spectral pipeline, defaults, and rendering details.
   <h2 class="section-title">Palettes</h2>
   <div class="card">
     <p>
-      Palettes map normalized values to RGBA colors. Available names: classic, magma, inferno,
+      Palettes map normalized values to RGBA colors. Available names: classic, magma, inferno, clawd,
       viridis, gray.
     </p>
   </div>
