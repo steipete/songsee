@@ -5,6 +5,7 @@ Generate modern spectrogram images from audio files.
 ## Features
 
 - Classic time–frequency spectrograms (FFT/STFT, Hann window)
+- Multi-panel feature visualizations (mel, chroma, hpss, selfsim, loudness, tempogram, mfcc)
 - Native decoding for WAV + MP3, ffmpeg fallback for everything else
 - PNG or JPEG output (default JPG)
 - Time slicing via `--start` + `--duration`
@@ -23,6 +24,7 @@ songsee track.mp3
 songsee track.wav --style magma --width 2048 --height 1024 -o spectro.png
 cat track.mp3 | songsee - --style gray --format png
 songsee track.mp3 --start 12.5 --duration 8 --output slice.jpg
+songsee track.mp3 --viz spectrogram,mel,chroma --width 2048 --height 1024
 ```
 
 ## Usage
@@ -43,6 +45,7 @@ Input can be a file path or `-` for stdin.
 - `--min-freq`, `--max-freq` frequency range in Hz
 - `--start`, `--duration` time slice in seconds
 - `--style` palette name
+- `--viz` visualizations (repeatable or comma-separated)
 - `--sample-rate` ffmpeg output sample rate
 - `--ffmpeg` explicit ffmpeg path
 - `-q, --quiet` suppress stdout output
@@ -54,6 +57,7 @@ Input can be a file path or `-` for stdin.
 - Default output is `input.jpg` or `input.png` based on `--format`.
 - When `--output` has no extension, the chosen format is appended.
 - JPEG quality is set to 95.
+- Multiple `--viz` entries render a grid that fits into the requested width/height.
 
 ## Decoding
 

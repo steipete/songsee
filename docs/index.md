@@ -10,8 +10,9 @@ body_class: home
     <div class="kicker reveal delay-1">Spectral imaging CLI</div>
     <h1 class="hero-title reveal delay-2">See sound as living color.</h1>
     <p class="hero-sub reveal delay-3">
-      songsee turns audio into precise, high-resolution spectrograms. Fast decode paths for WAV and MP3,
-      ffmpeg fallback for everything else, and palette styles that make science look cinematic.
+      songsee turns audio into precise, high-resolution spectrograms and feature panels. Fast decode
+      paths for WAV and MP3, ffmpeg fallback for everything else, and palette styles that make science
+      look cinematic.
     </p>
     <div class="hero-actions reveal delay-4">
       <a class="btn primary" href="#install">Install</a>
@@ -45,7 +46,11 @@ body_class: home
     </div>
     <div class="card">
       <h3>Palette styles</h3>
-      <p>classic, magma, inferno, viridis, gray, and clawd for a bold spectral aesthetic.</p>
+      <p>classic, magma, inferno, viridis, and gray for a bold spectral aesthetic.</p>
+    </div>
+    <div class="card">
+      <h3>Feature panels</h3>
+      <p>mel, chroma, hpss, selfsim, loudness, tempogram, mfcc — rendered as single or grid views.</p>
     </div>
     <div class="card">
       <h3>Clean output</h3>
@@ -73,6 +78,7 @@ body_class: home
     songsee track.wav --style magma --width 2048 --height 1024 -o spectro.png
     cat track.mp3 | songsee - --style gray --format png
     songsee track.mp3 --start 12.5 --duration 8 --output slice.jpg
+    songsee track.mp3 --viz spectrogram,mel,chroma --width 2048 --height 1024
   </div>
 </section>
 
@@ -86,7 +92,6 @@ body_class: home
     <div class="palette inferno" title="inferno"></div>
     <div class="palette viridis" title="viridis"></div>
     <div class="palette gray" title="gray"></div>
-    <div class="palette clawd" title="clawd"></div>
   </div>
 </section>
 

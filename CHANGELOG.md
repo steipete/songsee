@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - 2026-01-02
+
+- Multi-panel visualization grid via `--viz`
+- Added feature views: mel, chroma, hpss, selfsim, loudness, tempogram, mfcc
+- New heatmap renderer + loudness panel
+- Updated docs/spec to cover visualizations
+
 ## 0.1.0 - 2026-01-02
 
 - Generate classic spectrogram images from audio files

@@ -57,7 +57,18 @@ description: songsee spectral pipeline, defaults, and rendering details.
   <div class="card">
     <p>
       Palettes map normalized values to RGBA colors. Available names: classic, magma, inferno,
-      viridis, gray, clawd. The clawd palette shifts from deep ocean to coral highlights.
+      viridis, gray.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Visualizations</h2>
+  <div class="card">
+    <p>
+      Visualizations are selectable via --viz. Defaults to spectrogram. Supported names: spectrogram,
+      mel, chroma, hpss, selfsim, loudness, tempogram, mfcc. Multiple entries render as a grid of
+      panels.
     </p>
   </div>
 </section>
@@ -72,5 +83,6 @@ description: songsee spectral pipeline, defaults, and rendering details.
     --hop 512
     --sample-rate 44100
     --style classic
+    --viz spectrogram
   </div>
 </section>

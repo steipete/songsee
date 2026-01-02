@@ -348,10 +348,6 @@ a:hover {
   background: linear-gradient(90deg, #000000, #ffffff);
 }
 
-.palette.clawd {
-  background: linear-gradient(90deg, #02040f, #0b264a, #126175, #c1625c, #cd3728, #ffe6d2);
-}
-
 .domain-note {
   margin-top: 18px;
   padding: 12px 16px;
