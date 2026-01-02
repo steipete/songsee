@@ -1,4 +1,4 @@
-# 🌊 songsee — FFT so pretty.
+# 🌊 songsee — FFT so pretty, your ears will be jealous.
 
 
 ![9-mode visualization example](example.png)
