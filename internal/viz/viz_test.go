@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"math"
 	"testing"
+
+	"github.com/steipete/songsee/internal/dsp"
 )
 
 func TestParseList(t *testing.T) {
@@ -57,6 +59,77 @@ func TestRenderUnknown(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
+}
+
+func TestPercentiles(t *testing.T) {
+	values := []float64{1, 2, 3, 4, 5}
+	minVal, maxVal := percentileRange(values, 0.2, 0.8)
+	if minVal <= 1 || maxVal >= 5 {
+		t.Fatalf("unexpected percentile range")
+	}
+	val := percentileValue(values, 0.5)
+	if val != 3 {
+		t.Fatalf("unexpected percentile value")
+	}
+	if idx := percentileIndex(values, -1); idx != 0 {
+		t.Fatalf("unexpected low index")
+	}
+	if idx := percentileIndex(values, 2); idx != len(values)-1 {
+		t.Fatalf("unexpected high index")
+	}
+	minVal, maxVal = percentileRange(nil, 0.2, 0.8)
+	if minVal != 0 || maxVal != 1 {
+		t.Fatalf("unexpected empty percentile range")
+	}
+	if percentileValue(nil, 0.5) != 1 {
+		t.Fatalf("unexpected empty percentile value")
+	}
+}
+
+func TestSampleValues(t *testing.T) {
+	values := []float64{1, 2, 3}
+	sample := sampleValues(values, 10)
+	if len(sample) != 3 {
+		t.Fatalf("unexpected sample size")
+	}
+	large := make([]float64, 100)
+	for i := range large {
+		large[i] = float64(i)
+	}
+	sample = sampleValues(large, 10)
+	if len(sample) == 0 || len(sample) > 10 {
+		t.Fatalf("unexpected sample size")
+	}
+	sample = sampleValues(nil, 10)
+	if sample != nil {
+		t.Fatalf("expected nil sample")
+	}
+}
+
+func TestClampMax(t *testing.T) {
+	values := []float64{1, 10, 3}
+	clamped := clampMax(values, 5)
+	if clamped[1] != 5 {
+		t.Fatalf("expected clamp")
+	}
+	clamped = clampMax(values, -1)
+	if clamped[1] == 0 {
+		t.Fatalf("expected fallback clamp")
+	}
+}
+
+func TestApplyGamma(t *testing.T) {
+	m := dsp.NewFeatureMap(2, 1)
+	m.Set(0, 0, 1)
+	m.Set(1, 0, 4)
+	applyGamma(&m, 2)
+	if m.At(1, 0) <= m.At(0, 0) {
+		t.Fatalf("expected gamma effect")
+	}
+	applyGamma(&m, 0)
+	applyGamma(nil, 1)
+	empty := dsp.FeatureMap{}
+	applyGamma(&empty, 1)
 }
 
 func testSamples() []float64 {
