@@ -5,17 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/jpeg"
 	"image/png"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/steipete/songsee/internal/audio"
-	"github.com/steipete/songsee/internal/dsp"
 	"github.com/steipete/songsee/internal/render"
+	"github.com/steipete/songsee/internal/viz"
 )
 
 var version = "dev"
@@ -33,7 +35,8 @@ type cli struct {
 	StartSec   float64          `name:"start" help:"start time in seconds"`
 	Duration   float64          `name:"duration" help:"duration in seconds (0 = full)"`
 	SampleRate int              `name:"sample-rate" help:"ffmpeg output sample rate" default:"44100"`
-	Style      string           `help:"palette style: classic, magma, inferno, viridis, gray, clawd" default:"classic"`
+	Style      string           `help:"palette style: classic, magma, inferno, viridis, gray" default:"classic"`
+	Viz        []string         `name:"viz" help:"visualizations (repeatable or comma-separated): spectrogram, mel, chroma, hpss, selfsim, loudness, tempogram, mfcc"`
 	FFmpegPath string           `name:"ffmpeg" help:"path to ffmpeg binary"`
 	Quiet      bool             `short:"q" help:"suppress stdout output"`
 	Verbose    bool             `short:"v" help:"verbose stderr output"`
@@ -55,7 +58,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	parser, err := kong.New(&cfg,
 		kong.Name("songsee"),
-		kong.Description("generate a classic spectrogram image"),
+		kong.Description("generate spectral visualizations"),
 		kong.Vars{"version": version},
 		kong.Writers(stdout, stderr),
 		kong.Exit(func(code int) { panic(exitPanic{code: code}) }),
@@ -181,20 +184,40 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 	}
 
-	spec := dsp.ComputeSpectrogram(pcm.Samples, pcm.SampleRate, cfg.WindowSize, cfg.HopSize)
 	style := strings.ToLower(strings.TrimSpace(cfg.Style))
 	palette, err := render.PaletteByName(style)
 	if err != nil {
 		return dieUsage(stderr, ctx, "unknown style")
 	}
 
-	img, err := render.Spectrogram(&spec, render.Options{
-		Width:   cfg.Width,
-		Height:  cfg.Height,
-		MinFreq: cfg.MinFreq,
-		MaxFreq: cfg.MaxFreq,
-		Palette: palette,
-	})
+	vizList, err := viz.ParseList(cfg.Viz)
+	if err != nil {
+		return dieUsage(stderr, ctx, err.Error())
+	}
+
+	layout, err := gridLayout(len(vizList), cfg.Width, cfg.Height, 8)
+	if err != nil {
+		return dieUsage(stderr, ctx, err.Error())
+	}
+
+	ctxViz := viz.NewContext(pcm.Samples, pcm.SampleRate, cfg.WindowSize, cfg.HopSize)
+	panels := make([]render.Panel, 0, len(vizList))
+	for i, kind := range vizList {
+		panel, err := viz.Render(kind, ctxViz, viz.RenderOptions{
+			Width:   layout.CellWidth,
+			Height:  layout.CellHeight,
+			Palette: palette,
+			MinFreq: cfg.MinFreq,
+			MaxFreq: cfg.MaxFreq,
+		})
+		if err != nil {
+			return die(stderr, err)
+		}
+		x := (i % layout.Cols) * (layout.CellWidth + layout.Gap)
+		y := (i / layout.Cols) * (layout.CellHeight + layout.Gap)
+		panels = append(panels, render.Panel{Image: panel, X: x, Y: y})
+	}
+	img, err := render.Compose(layout.Width, layout.Height, panels, color.RGBA{0, 0, 0, 255})
 	if err != nil {
 		return die(stderr, err)
 	}
@@ -207,6 +230,44 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stdout, output)
 	}
 	return 0
+}
+
+type grid struct {
+	Cols       int
+	Rows       int
+	CellWidth  int
+	CellHeight int
+	Gap        int
+	Width      int
+	Height     int
+}
+
+func gridLayout(count, width, height, gap int) (grid, error) {
+	if count <= 0 {
+		count = 1
+	}
+	if width <= 0 || height <= 0 {
+		return grid{}, fmt.Errorf("invalid output size")
+	}
+	cols := int(math.Ceil(math.Sqrt(float64(count))))
+	if cols < 1 {
+		cols = 1
+	}
+	rows := int(math.Ceil(float64(count) / float64(cols)))
+	cellWidth := (width - gap*(cols-1)) / cols
+	cellHeight := (height - gap*(rows-1)) / rows
+	if cellWidth <= 0 || cellHeight <= 0 {
+		return grid{}, fmt.Errorf("output too small for %d panels", count)
+	}
+	return grid{
+		Cols:       cols,
+		Rows:       rows,
+		CellWidth:  cellWidth,
+		CellHeight: cellHeight,
+		Gap:        gap,
+		Width:      width,
+		Height:     height,
+	}, nil
 }
 
 func writeImage(path, format string, img image.Image, stdout io.Writer) error {

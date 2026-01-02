@@ -14,6 +14,7 @@ type Spectrogram struct {
 	Max        float64
 	SampleRate int
 	WindowSize int
+	HopSize    int
 	BinHz      float64
 }
 
@@ -93,6 +94,7 @@ func ComputeSpectrogram(samples []float64, sampleRate, windowSize, hopSize int) 
 		Max:        maxVal,
 		SampleRate: sampleRate,
 		WindowSize: windowSize,
+		HopSize:    hopSize,
 		BinHz:      binHz,
 	}
 }
