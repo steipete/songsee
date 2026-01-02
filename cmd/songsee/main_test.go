@@ -283,6 +283,32 @@ func TestRunOutputStdout(t *testing.T) {
 	}
 }
 
+func TestRunOutputStdoutDefaultFormat(t *testing.T) {
+	tmp := t.TempDir()
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd: %v", err)
+	}
+	if err := os.Chdir(tmp); err != nil {
+		t.Fatalf("Chdir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(cwd) })
+
+	wav := makeWAV([]int16{0, 1000, -1000, 0}, 44100, 1)
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := run([]string{"--output", "-", "-"}, bytes.NewReader(wav), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("exit %d stderr=%s", exit, stderr.String())
+	}
+	if _, _, err := image.Decode(bytes.NewReader(stdout.Bytes())); err != nil {
+		t.Fatalf("decode stdout image: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(tmp, "-.jpg")); err == nil {
+		t.Fatalf("unexpected file created")
+	}
+}
+
 func TestRunOutputAuto(t *testing.T) {
 	dir := t.TempDir()
 	input := filepath.Join(dir, "input.wav")
@@ -514,7 +540,7 @@ func flatImage(img image.Image) bool {
 	return maxLum-minLum < 1000
 }
 
-func makeWAV(samples []int16, sampleRate int, channels int) []byte {
+func makeWAV(samples []int16, sampleRate, channels int) []byte {
 	if channels < 1 {
 		channels = 1
 	}

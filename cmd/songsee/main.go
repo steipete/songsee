@@ -136,7 +136,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			base := strings.TrimSuffix(filepath.Base(input), ext)
 			output = filepath.Join(filepath.Dir(input), base+"."+format)
 		}
-	} else {
+	} else if output != "-" {
 		ext := strings.ToLower(filepath.Ext(output))
 		switch ext {
 		case ".png":
@@ -188,7 +188,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return dieUsage(stderr, ctx, "unknown style")
 	}
 
-	img, err := render.Spectrogram(spec, render.Options{
+	img, err := render.Spectrogram(&spec, render.Options{
 		Width:   cfg.Width,
 		Height:  cfg.Height,
 		MinFreq: cfg.MinFreq,

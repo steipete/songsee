@@ -51,16 +51,6 @@ func PaletteByName(name string) (Palette, error) {
 		}), nil
 	case "gray", "grey":
 		return gradient([]stop{{0, rgb(0, 0, 0)}, {1, rgb(255, 255, 255)}}), nil
-	case "clawd":
-		// 🦞 Lobster from the deep! Ocean depths to coral brightness
-		return gradient([]stop{
-			{0.0, rgb(2, 4, 15)},      // Abyss black-blue
-			{0.2, rgb(11, 38, 74)},    // Deep ocean navy
-			{0.4, rgb(18, 97, 117)},   // Ocean teal
-			{0.6, rgb(193, 98, 92)},   // Coral/salmon
-			{0.8, rgb(205, 55, 40)},   // Lobster red! 🦞
-			{1.0, rgb(255, 230, 210)}, // Foam/shell highlight
-		}), nil
 	default:
 		return nil, errors.New("unknown palette")
 	}

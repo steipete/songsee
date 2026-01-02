@@ -28,7 +28,7 @@ func TestRenderSpectrogram(t *testing.T) {
 		Max:    -1,
 		BinHz:  100,
 	}
-	img, err := Spectrogram(spec, Options{
+	img, err := Spectrogram(&spec, Options{
 		Width:   4,
 		Height:  4,
 		Palette: func(t float64) color.RGBA { return color.RGBA{R: uint8(255 * t), A: 255} },
@@ -47,6 +47,9 @@ func TestRenderSpectrogram(t *testing.T) {
 }
 
 func TestRenderSpectrogramErrors(t *testing.T) {
+	if _, err := Spectrogram(nil, Options{Width: 1, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
+		t.Fatalf("expected spec error")
+	}
 	spec := dsp.Spectrogram{
 		Frames: 1,
 		Bins:   1,
@@ -55,10 +58,10 @@ func TestRenderSpectrogramErrors(t *testing.T) {
 		Max:    1,
 		BinHz:  100,
 	}
-	if _, err := Spectrogram(spec, Options{Width: 0, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
+	if _, err := Spectrogram(&spec, Options{Width: 0, Height: 1, Palette: func(float64) color.RGBA { return color.RGBA{} }}); err == nil {
 		t.Fatalf("expected size error")
 	}
-	if _, err := Spectrogram(spec, Options{Width: 1, Height: 1}); err == nil {
+	if _, err := Spectrogram(&spec, Options{Width: 1, Height: 1}); err == nil {
 		t.Fatalf("expected palette error")
 	}
 }
@@ -72,7 +75,7 @@ func TestRenderSpectrogramClampAndRange(t *testing.T) {
 		Max:    0,
 		BinHz:  100,
 	}
-	img, err := Spectrogram(spec, Options{
+	img, err := Spectrogram(&spec, Options{
 		Width:    3,
 		Height:   2,
 		MinFreq:  50,
@@ -119,7 +122,7 @@ func TestRenderSpectrogramSinglePixel(t *testing.T) {
 		Max:    -10,
 		BinHz:  100,
 	}
-	img, err := Spectrogram(spec, Options{
+	img, err := Spectrogram(&spec, Options{
 		Width:   1,
 		Height:  1,
 		Palette: func(_ float64) color.RGBA { return color.RGBA{G: 200, A: 255} },
@@ -141,7 +144,7 @@ func TestRenderSpectrogramRangeReset(t *testing.T) {
 		Max:    -1,
 		BinHz:  100,
 	}
-	_, err := Spectrogram(spec, Options{
+	_, err := Spectrogram(&spec, Options{
 		Width:   2,
 		Height:  2,
 		MinFreq: 1000,

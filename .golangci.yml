@@ -14,29 +14,27 @@ linters:
     - revive
     - gocritic
     - misspell
+  settings:
+    revive:
+      rules:
+        - name: blank-imports
+        - name: empty-lines
+        - name: error-strings
+        - name: early-return
+        - name: increment-decrement
+        - name: range
+        - name: receiver-naming
+        - name: var-declaration
+    gocritic:
+      enabled-tags:
+        - performance
+        - style
+        - diagnostic
 
 formatters:
   enable:
     - gofmt
 
-linters-settings:
-  revive:
-    rules:
-      - name: blank-imports
-      - name: empty-lines
-      - name: error-strings
-      - name: early-return
-      - name: increment-decrement
-      - name: range
-      - name: receiver-naming
-      - name: var-declaration
-  gocritic:
-    enabled-tags:
-      - performance
-      - style
-      - diagnostic
-
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0

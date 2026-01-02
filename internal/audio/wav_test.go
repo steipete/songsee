@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 )
 
-func makeWAV(samples []int16, sampleRate int, channels int) []byte {
+func makeWAV(samples []int16, sampleRate, channels int) []byte {
 	if channels < 1 {
 		channels = 1
 	}

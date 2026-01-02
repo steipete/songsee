@@ -23,7 +23,10 @@ type Options struct {
 }
 
 // Spectrogram renders a spectrogram into an RGBA image.
-func Spectrogram(spec dsp.Spectrogram, opts Options) (*image.RGBA, error) {
+func Spectrogram(spec *dsp.Spectrogram, opts Options) (*image.RGBA, error) {
+	if spec == nil {
+		return nil, fmt.Errorf("spectrogram required")
+	}
 	if opts.Width <= 0 || opts.Height <= 0 {
 		return nil, fmt.Errorf("invalid output size")
 	}
