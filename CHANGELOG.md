@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 - Unreleased
+
+- New Clawd style
+
 ## 0.1.0 - 2026-01-02
 
 - Spectrogram + feature panels (mel, chroma, hpss, selfsim, loudness, tempogram, mfcc, flux) with multi-panel grid
